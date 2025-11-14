@@ -102,7 +102,7 @@
           profile = ''
             export PS1='\[\033[1;32m\][ctf-env]\[\033[0m\] \w \$ '
             
-            echo " CTF Development Environment Loaded "
+            echo "Welcome to 0xm0t0k0's CTF environment"
             echo ""
             echo "FHS Environment - 32-bit binaries should work"
             echo ""
