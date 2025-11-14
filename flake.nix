@@ -1,23 +1,43 @@
 {
-  description = "CTF Development Environment with FHS support for 32-bit binaries";
+  description = "0xm0t0k0's CTF lab";
+
+  nixConfig = {
+    extra-substituters = [
+      "https://pwndbg.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "pwndbg.cachix.org-1:HhtIpP7j73SnuzLgobqqa8LVTng5Qi36sQtNt79cD3k="
+    ];
+  };
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    
+    pwndbg = {
+      url = "github:pwndbg/pwndbg";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, pwndbg }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         
-        # Python environment with CTF tools
+        
+        pwndbg-gdb = pwndbg.packages.${system}.pwndbg;
+        
+        # Python environment setup
         pythonEnv = pkgs.python3.withPackages (ps: with ps; [
           pwntools
           pycryptodome
           requests
           ropper
           capstone
+           z3-solver
+           unicorn
+           keystone-engine
         ]);
 
       in
@@ -25,72 +45,75 @@
         devShells.default = (pkgs.buildFHSEnv {
           name = "ctf-env";
           
-          targetPkgs = pkgs: with pkgs; [
+          targetPkgs = pkgs: [
             # Reverse Engineering
-            ghidra-bin
-            radare2
-            rizin
-            cutter
+            pkgs.ghidra-bin
+            pkgs.radare2
+            pkgs.rizin
+            pkgs.cutter
             
-            # Disassemblers & Decompilers
-            binutils
-            gdb
-            lldb
+            # Debugging
+            pkgs.gdb
+            pwndbg-gdb
+            pkgs.lldb
             
             # Binary Analysis
-            file
-            hexdump
-            xxd
-            binwalk
-            foremost
-            ltrace
-            strace
+            pkgs.file
+            pkgs.hexdump
+            pkgs.xxd
+            pkgs.binwalk
+            pkgs.foremost
+            pkgs.ltrace
+            pkgs.strace
             
             # Exploitation Tools
             pythonEnv
             
             # Networking
-            netcat-gnu
-            nmap
-            socat
+            pkgs.netcat-gnu
+            pkgs.nmap
+            pkgs.socat
+            pkgs.wireshark
+            pkgs.tcpdump
             
             # Cryptography
-            openssl
-            john
-            hashcat
+            pkgs.openssl
+            pkgs.john
+            pkgs.hashcat
             
             # Assembly/Compilation
-            gcc
-            glibc
-            clang
-            nasm
+            pkgs.gcc
+            pkgs.glibc
+            pkgs.clang
+            pkgs.nasm
             
             # Patching & Hex Editors
-            patchelf
-            hexedit
+            pkgs.patchelf
+            pkgs.hexedit
             
             # Web Tools
-            curl
-            wget
+            pkgs.curl
+            pkgs.wget
             
             # Utilities
-            tmux
-            git
-            vim
-            ripgrep
-            fd
-            bat
-            jq
+            pkgs.tmux
+            pkgs.git
+            pkgs.vim
+            pkgs.ripgrep
+            pkgs.fd
+            pkgs.bat
+            pkgs.jq
+            pkgs.which
             
             # Misc
-            which
+            pkgs.qemu
             
-            # 32-bit libraries support
-            pkgsi686Linux.glibc
-            pkgsi686Linux.stdenv.cc.cc.lib
+            # 32-bit libraries (CRITICAL for CTFs)
+            pkgs.pkgsi686Linux.glibc
+            pkgs.pkgsi686Linux.stdenv.cc.cc.lib
           ];
           
-          # This includes 32-bit support automatically
+          # Multi-arch support for 32-bit binaries
           multiPkgs = pkgs: with pkgs; [
             glibc
             gcc-unwrapped
@@ -102,26 +125,38 @@
           profile = ''
             export PS1='\[\033[1;32m\][ctf-env]\[\033[0m\] \w \$ '
             
-            echo "Welcome to 0xm0t0k0's CTF environment"
+            # Configure pwndbg
+            # The pwndbg package provides gdbinit.py
+            if [ -d "${pwndbg-gdb}/share/pwndbg" ]; then
+              echo "source ${pwndbg-gdb}/share/pwndbg/gdbinit.py" > ~/.gdbinit
+            fi
+            
+            echo "Welcome to the lab"
             echo ""
-            echo "FHS Environment - 32-bit binaries should work"
+            echo "FHS Environment so that 32-bit binaries work out of the box hihi"
             echo ""
             echo "Available Tools:"
             echo "  Reverse Engineering: ghidra-bin, radare2, cutter, rizin"
-            echo "  Debugging: gdb, lldb"
+            echo "  Debugging: gdb with pwndbg, lldb"
             echo "  Binary Analysis: binwalk, file, hexdump, ltrace, strace"
             echo "  Exploitation: pwntools (Python), ropper"
-            echo "  Networking: netcat, nmap, socat, "
+            echo "  Networking: netcat, nmap, socat, wireshark"
             echo "  Crypto: openssl, john, hashcat"
             echo "  Assembly: nasm, gcc, clang"
             echo ""
-            echo "Python packages: pwntools, ropper, capstone, pycryptodome"
+            echo "Python packages: pwntools, ropper, capstone, pycryptodome, z3-solver, unicorn, keystone-engine"
+            echo ""
+            echo "Have fun hacking"
             echo ""
             
-            # Set up some useful aliases
+            # you can also set up useful aliases
             alias gdb='gdb -q'
             alias r2='radare2'
             alias pwn='python3 -c "from pwn import *"'
+            
+            # Ensure 32-bit libraries are available in case of bugs with 32-bit executables
+            export LD_LIBRARY_PATH="${pkgs.pkgsi686Linux.glibc}/lib:${pkgs.pkgsi686Linux.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+            export GLIBC_32="${pkgs.pkgsi686Linux.glibc}"
           '';
         }).env;
       }
