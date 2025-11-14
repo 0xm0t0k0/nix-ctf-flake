@@ -116,7 +116,7 @@
             echo "  Assembly: nasm, gcc, clang"
             echo ""
             echo "Python packages: pwntools, ropper, capstone, pycryptodome"
-            echo "
+            echo ""
             
             # Set up some useful aliases
             alias gdb='gdb -q'
