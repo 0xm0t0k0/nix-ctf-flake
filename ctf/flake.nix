@@ -1,5 +1,5 @@
 {
-  description = "CTF Development Environment for Reverse Engineering and Binary Exploitation";
+  description = "CTF Development Environment with FHS support for 32-bit binaries";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -16,33 +16,26 @@
           pwntools
           pycryptodome
           requests
-          # z3 # Uncomment if needed - can be heavy
-          # angr # Binary analysis - uncomment if needed (large dependencies)
           ropper
           capstone
-          # keystone-engine # Assembler engine - uncomment if needed
-          # unicorn # CPU emulator - uncomment if needed
         ]);
 
       in
       {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
+        devShells.default = (pkgs.buildFHSEnv {
+          name = "ctf-env";
+          
+          targetPkgs = pkgs: with pkgs; [
             # Reverse Engineering
             ghidra-bin
             radare2
             rizin
             cutter
-            # iaito # GUI for rizin, uncomment if available in your nixpkgs
             
             # Disassemblers & Decompilers
             binutils
             gdb
             lldb
-            
-            # GDB Enhancements
-            # gef # GEF needs to be installed via pip or manually
-            # pwndbg # You can add this if available in your nixpkgs version
             
             # Binary Analysis
             file
@@ -55,9 +48,6 @@
             
             # Exploitation Tools
             pythonEnv
-            # metasploit # Large package, install separately if needed
-            
-            # ROPgadget tools (ropper is in Python packages)
             
             # Networking
             netcat-gnu
@@ -80,17 +70,10 @@
             # Patching & Hex Editors
             patchelf
             hexedit
-            # bless # GTK hex editor - may not be in nixpkgs
             
-            # Forensics
-            # volatility3 # Memory forensics - install if needed
-            sleuthkit
-            # autopsy # GUI for sleuthkit - may not be in nixpkgs
-            
-            # Web Tools (for web challenges)
+            # Web Tools
             curl
             wget
-            sqlmap
             
             # Utilities
             tmux
@@ -101,17 +84,30 @@
             bat
             jq
             
-            # 32-bit support (important for CTFs)
-            pkgsi686Linux.glibc
-            
             # Misc
             qemu
-            # docker # Needs special NixOS configuration, enable in system config
+            which
             
+            # 32-bit libraries (CRITICAL for CTFs)
+            pkgsi686Linux.glibc
+            pkgsi686Linux.stdenv.cc.cc.lib
           ];
-
-          shellHook = ''
+          
+          # This is the key - it includes 32-bit support automatically
+          multiPkgs = pkgs: with pkgs; [
+            glibc
+            gcc-unwrapped
+            stdenv.cc.cc.lib
+          ];
+          
+          runScript = "bash";
+          
+          profile = ''
+            export PS1='\[\033[1;32m\][ctf-env]\[\033[0m\] \w \$ '
+            
             echo "🚩 CTF Development Environment Loaded 🚩"
+            echo ""
+            echo "FHS Environment - 32-bit binaries should work out of the box!"
             echo ""
             echo "Available Tools:"
             echo "  Reverse Engineering: ghidra-bin, radare2, cutter, rizin"
@@ -124,7 +120,7 @@
             echo ""
             echo "Python packages: pwntools, ropper, capstone, pycryptodome"
             echo ""
-            echo "💡 To install GEF for GDB (recommended):"
+            echo "💡 To install GEF for GDB:"
             echo "   bash -c \"\$(curl -fsSL https://gef.blah.cat/sh)\""
             echo ""
             
@@ -132,11 +128,8 @@
             alias gdb='gdb -q'
             alias r2='radare2'
             alias pwn='python3 -c "from pwn import *"'
-            
-            # Ensure 32-bit libraries are available
-            export LD_LIBRARY_PATH="${pkgs.pkgsi686Linux.glibc}/lib:$LD_LIBRARY_PATH"
           '';
-        };
+        }).env;
       }
     );
 }
