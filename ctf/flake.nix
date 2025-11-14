@@ -111,7 +111,7 @@
           ];
 
           shellHook = ''
-            echo "🚩 CTF Development Environment Loaded 🚩"
+            echo " CTF Environment Loaded "
             echo ""
             echo "Available Tools:"
             echo "  Reverse Engineering: ghidra-bin, radare2, cutter, rizin"
