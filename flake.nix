@@ -53,8 +53,6 @@
             netcat-gnu
             nmap
             socat
-            wireshark
-            tcpdump
             
             # Cryptography
             openssl
@@ -85,15 +83,14 @@
             jq
             
             # Misc
-            qemu
             which
             
-            # 32-bit libraries (CRITICAL for CTFs)
+            # 32-bit libraries support
             pkgsi686Linux.glibc
             pkgsi686Linux.stdenv.cc.cc.lib
           ];
           
-          # This is the key - it includes 32-bit support automatically
+          # This includes 32-bit support automatically
           multiPkgs = pkgs: with pkgs; [
             glibc
             gcc-unwrapped
