@@ -105,24 +105,21 @@
           profile = ''
             export PS1='\[\033[1;32m\][ctf-env]\[\033[0m\] \w \$ '
             
-            echo "🚩 CTF Development Environment Loaded 🚩"
+            echo " CTF Development Environment Loaded "
             echo ""
-            echo "FHS Environment - 32-bit binaries should work out of the box!"
+            echo "FHS Environment - 32-bit binaries should work"
             echo ""
             echo "Available Tools:"
             echo "  Reverse Engineering: ghidra-bin, radare2, cutter, rizin"
             echo "  Debugging: gdb, lldb"
             echo "  Binary Analysis: binwalk, file, hexdump, ltrace, strace"
             echo "  Exploitation: pwntools (Python), ropper"
-            echo "  Networking: netcat, nmap, socat, wireshark"
+            echo "  Networking: netcat, nmap, socat, "
             echo "  Crypto: openssl, john, hashcat"
             echo "  Assembly: nasm, gcc, clang"
             echo ""
             echo "Python packages: pwntools, ropper, capstone, pycryptodome"
-            echo ""
-            echo "💡 To install GEF for GDB:"
-            echo "   bash -c \"\$(curl -fsSL https://gef.blah.cat/sh)\""
-            echo ""
+            echo "
             
             # Set up some useful aliases
             alias gdb='gdb -q'
