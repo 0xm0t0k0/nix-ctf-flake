@@ -108,7 +108,7 @@
             # Misc
             pkgs.qemu
             
-            # 32-bit libraries (CRITICAL for CTFs)
+            # 32-bit libraries
             pkgs.pkgsi686Linux.glibc
             pkgs.pkgsi686Linux.stdenv.cc.cc.lib
           ];
