@@ -17,38 +17,38 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
+        buildInputs = [
           # Debuggers
-          gdb
-          pwndbg  
-          radare2
-          ghidra
+          pkgs.gdb
+          pkgs.pwndbg     
+          pkgs.radare2
+          pkgs.ghidra
           
           # Analysis
-          ltrace
-          strace
-          file
-          binwalk
+          pkgs.ltrace
+          pkgs.strace
+          pkgs.file
+          pkgs.binwalk
           
-          # Python & Pwn
-          python3
-          (python3.withPackages (ps: with ps; [
+          # Networking
+          pkgs.netcat-gnu
+          pkgs.nmap
+          pkgs.socat
+          
+          # Compilers
+          pkgs.gcc_multi
+          
+          # Python Environment
+          (pkgs.python3.withPackages (ps: with ps; [
             pwntools
             ropper
+            # Note: We let pwntools handle capstone dependencies to avoid conflicts
             pycryptodome
             requests
           ]))
-          
-          # Networking
-          netcat-gnu
-          nmap
-          socat
-          
-          # Compilers
-          gcc_multi
         ];
 
-        # --- THE LOADER (32-bit Support) ---
+        #  (32-bit Support)
         NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
           pkgs.stdenv.cc.cc
           pkgs.openssl
@@ -66,8 +66,8 @@
         NIX_LD = pkgs.lib.fileContents "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
 
         shellHook = ''
-          echo " [+] UwUHackz Loaded."
-          echo " [+] 32-bit Support Active :p ."
+          echo " [+] UwUhackz Loaded (PsyOp Mode)."
+          echo " [+] 32-bit as well :p."
         '';
       };
     };
