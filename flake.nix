@@ -1,16 +1,11 @@
 {
-  description = "Cyberdeck: 0xm0t0k0's Research Lab";
+  description = "0xm0t0k0's Research Lab";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    
-    
-    pwndbg.url = "github:pwndbg/pwndbg";
-    pwndbg.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  # 
-  outputs = { self, nixpkgs, pwndbg }:
+  outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -22,11 +17,10 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        # --- THE ARSENAL ---
         buildInputs = with pkgs; [
           # Debuggers
           gdb
-          pwndbg.packages.${system}.default 
+          pwndbg  
           radare2
           ghidra
           
@@ -41,7 +35,6 @@
           (python3.withPackages (ps: with ps; [
             pwntools
             ropper
-            capstone
             pycryptodome
             requests
           ]))
@@ -73,7 +66,8 @@
         NIX_LD = pkgs.lib.fileContents "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
 
         shellHook = ''
-          echo " [+] UwUHackz by 0xm0t0k0"
+          echo " [+] UwUHackz Loaded."
+          echo " [+] 32-bit Support Active :p ."
         '';
       };
     };
