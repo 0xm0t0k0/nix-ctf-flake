@@ -1,11 +1,16 @@
 {
-  description = "Cyberdeck: Multi-Arch Research Lab";
+  description = "Cyberdeck: 0xm0t0k0's Research Lab";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    
+    
+    pwndbg.url = "github:pwndbg/pwndbg";
+    pwndbg.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs }:
+  # 
+  outputs = { self, nixpkgs, pwndbg }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -13,16 +18,15 @@
         config.allowUnfree = true;
       };
       
-      # We explicitly grab the 32-bit package set
       pkgs32 = pkgs.pkgsi686Linux;
     in
     {
       devShells.${system}.default = pkgs.mkShell {
         # --- THE ARSENAL ---
         buildInputs = with pkgs; [
-          # Debuggers (GDB handles both 32/64 automatically)
+          # Debuggers
           gdb
-          pwndbg
+          pwndbg.packages.${system}.default 
           radare2
           ghidra
           
@@ -42,26 +46,23 @@
             requests
           ]))
           
-          # Network
+          # Networking
           netcat-gnu
           nmap
           socat
           
-          # Compilers (Enable 32-bit compilation support)
-          gcc_multi  # This will allow use of gcc -m32 to compile 32-bit binaries
+          # Compilers
+          gcc_multi
         ];
 
-        # HYBRID LOADER 
-        # We mix both architecture libraries into the path so the binary can find what it needs.
+        # --- THE LOADER (32-bit Support) ---
         NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-          # 64-bit Libs
           pkgs.stdenv.cc.cc
           pkgs.openssl
           pkgs.glib
           pkgs.zlib
           pkgs.glibc
           
-          # 32-bit Libs 
           pkgs32.stdenv.cc.cc
           pkgs32.openssl
           pkgs32.glib
@@ -69,12 +70,10 @@
           pkgs32.glibc
         ];
         
-        # Point to the dynamic loader
         NIX_LD = pkgs.lib.fileContents "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
 
         shellHook = ''
-          echo " [+] UwUHackz Loaded  (Multi-Arch Capabilities)."
-          echo " [+] 32-bit support active via NIX_LD."
+          echo " [+] UwUHackz by 0xm0t0k0"
         '';
       };
     };
