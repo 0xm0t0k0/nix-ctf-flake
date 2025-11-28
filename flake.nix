@@ -42,7 +42,6 @@
           (pkgs.python3.withPackages (ps: with ps; [
             pwntools
             ropper
-            # Note: We let pwntools handle capstone dependencies to avoid conflicts
             pycryptodome
             requests
           ]))
